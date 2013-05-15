@@ -22,6 +22,11 @@ typedef struct lisp_node {
 
 } lisp_node, *lisp_expression ;
 
+typedef struct lisp_var {
+		char *key ;
+		lisp_expression value ;
+} lisp_var ;
+
 int read_expression( lisp_expression *p_expression ) ;
 int eval_expression( lisp_expression expression, lisp_expression *p_value ) ;
 status print_expression( lisp_expression expression ) ;
@@ -30,6 +35,10 @@ lisp_expression new_expression() ;
 lisp_atom new_atom( char *s ) ;
 int equal_atom( lisp_atom atom1, lisp_atom atom2 ) ;
 
+int c_atomp( clist arglist, lisp_expression *p_return ) ;
+int c_listp( clist arglist, lisp_expression *p_return ) ;
+int c_nullp( clist arglist, lisp_expression *p_return ) ;
+int c_setq( clist arglist, lisp_expression *p_return ) ;
 int c_car( clist arglist, lisp_expression *p_return ) ;
 int c_cdr( clist arglist, lisp_expression *p_return )  ;
 int c_cons( clist arglist, lisp_expression *p_return ) ;

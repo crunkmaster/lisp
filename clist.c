@@ -15,6 +15,7 @@ bool empty_circ_list( clist L ) {
   return ( L == NULL ) ? TRUE : FALSE ;
 
 }
+
 status allocate_node( clist *p_L, generic_ptr data ) {
   
   clist L = (clist) malloc( sizeof( node ) ) ;

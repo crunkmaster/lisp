@@ -5,9 +5,12 @@
 #include "lex.h"
 #include "interpreter.h"
 #include "clist.h"
+#include "clist_interface.h"
 #include "globals.h"
 
-#define MAXBUILTIN 9
+#define MAXBUILTIN 10
+
+static clist variables ;
 
 lisp_expression new_expression() {
   return ( lisp_expression ) malloc( sizeof( lisp_node )) ;
@@ -175,7 +178,7 @@ extern int evaluate_function( char *name, clist args, lisp_expression *p_value )
   } builtin[MAXBUILTIN] = {
 	{"CAR", c_car}, {"CDR", c_cdr}, {"CONS", c_cons}, {"EVAL", c_eval},
 	{"EXIT", c_exit}, {"ATOMP", c_atomp}, {"LISTP", c_listp}, {"NULLP", c_nullp},
-	{"EQUAL", c_equal}
+	{"EQUAL", c_equal}, {"SETQ", c_setq}
   } ;
 
   int i ;
@@ -239,9 +242,21 @@ int eval_expression( lisp_expression expression, lisp_expression *p_value ) {
 }
 
 status print_expression( lisp_expression expression ) {
+	
+	lisp_expression variable_value ;
 
-  if ( LISP_TYPE( expression ) == ATOM )
-	printf( "%s", ATOM_VALUE( expression )) ;
+  if ( LISP_TYPE( expression ) == ATOM ) {
+
+		/* if that atom is a variable name, print the value
+			 of that variable */
+
+		if ( get_value_at_key( variables, ATOM_VALUE( expression ), &variable_value ) == OK )
+			print_expression( variable_value ) ;
+
+		else 
+			printf( "%s", ATOM_VALUE( expression )) ;
+
+	}
 
   else {
 
@@ -392,6 +407,34 @@ int c_listp( clist arglist, lisp_expression *p_return ) {
 
   *p_return = expression ;
   return 0 ;
+
+}
+
+int c_setq( clist arglist, lisp_expression *p_return ) {
+	
+	lisp_expression var_name ;
+	lisp_expression var_value ;
+
+	lisp_var temp ;
+
+	/* can only assign one expression to variable */
+	if ( circ_length( arglist ) != 2 )
+		return E_EVAL ;
+
+	var_name = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
+	if ( LISP_TYPE( var_name ) != ATOM )
+		return E_EVAL ;
+
+	var_value = ( lisp_expression ) DATA( nth_node( arglist, 2 )) ;
+
+	temp.key = ATOM_VALUE( var_name ) ;
+	temp.value = var_value ;
+
+	append_lisp_var( &variables, &temp ) ;
+
+	/* setq returns the data assigned*/
+	*p_return = var_value ;
+	return 0 ;
 
 }
 
