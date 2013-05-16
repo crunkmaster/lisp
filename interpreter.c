@@ -21,7 +21,7 @@ lisp_atom new_atom( char *s ) {
   char *dest = malloc( sizeof(char) * (strlen(s) + 1 )) ;
 
   if ( dest )
-	strcpy( dest, s ) ;
+    strcpy( dest, s ) ;
   return dest ;
 
 }
@@ -33,36 +33,36 @@ int equal_atom( lisp_atom atom1, lisp_atom atom2 ) {
 }
 
 bool equal_lisp_list( clist list1, clist list2 ) {
-  
-	static clist temp1 = NULL ;
-	static clist temp2 = NULL ;
 
-	while ( 1 ) {
-		
-		temp1 = circ_list_iterator( list1, temp1 ) ;
-		temp2 = circ_list_iterator( list2, temp2 ) ;  
+  static clist temp1 = NULL ;
+  static clist temp2 = NULL ;
 
-		/* try to check if lists are the same length */
-		if( (temp1 != NULL) && (temp2 == NULL ) ) { return FALSE ; }
-		if( (temp1 == NULL) && (temp2 != NULL ) ) { return FALSE ; }
+  while ( 1 ) {
 
-		/* if we've hit the end of the list, then we're done! */
-		if ( (temp1 == NULL) && (temp2 == NULL) ) return TRUE ;
+    temp1 = circ_list_iterator( list1, temp1 ) ;
+    temp2 = circ_list_iterator( list2, temp2 ) ;
 
-		/* if the two lists contain different types, then we quit */
-		if ( LISP_TYPE( DATA(temp1) ) != LISP_TYPE( DATA(temp2) )) { 
-			return FALSE ; 
-		}
-		
-		if ( LISP_TYPE( temp1 ) == ATOM ) {
-			if ( equal_atom( ATOM_VALUE( temp1 ), ATOM_VALUE( temp2 )) == FALSE ) { 
-				return FALSE ; 
-			}
-			else 
-				return equal_lisp_list( temp1, temp2 ) ;
-		}
-		if ( LISP_TYPE( temp1 ) == LIST ) return equal_lisp_list( temp1, temp2 ) ;
-	}
+    /* try to check if lists are the same length */
+    if( (temp1 != NULL) && (temp2 == NULL ) ) { return FALSE ; }
+    if( (temp1 == NULL) && (temp2 != NULL ) ) { return FALSE ; }
+
+    /* if we've hit the end of the list, then we're done! */
+    if ( (temp1 == NULL) && (temp2 == NULL) ) return TRUE ;
+
+    /* if the two lists contain different types, then we quit */
+    if ( LISP_TYPE( DATA(temp1) ) != LISP_TYPE( DATA(temp2) )) {
+      return FALSE ;
+    }
+
+    if ( LISP_TYPE( temp1 ) == ATOM ) {
+      if ( equal_atom( ATOM_VALUE( temp1 ), ATOM_VALUE( temp2 )) == FALSE ) {
+        return FALSE ;
+      }
+      else
+        return equal_lisp_list( temp1, temp2 ) ;
+    }
+    if ( LISP_TYPE( temp1 ) == LIST ) return equal_lisp_list( temp1, temp2 ) ;
+  }
 }
 
 int read_expression( lisp_expression *p_expression ) {
@@ -76,92 +76,92 @@ int read_expression( lisp_expression *p_expression ) {
 
   p_token = gettoken() ;
   if ( p_token -> tokentype == EOF_T )
-	return E_EOF ;
+    return E_EOF ;
 
   if (( expression = new_expression()) == NULL )
-	return E_SPACE ;
+    return E_SPACE ;
 
   switch ( p_token -> tokentype ) {
 
   case RIGHTPAREN_T:
-	return E_SYNTAX ;
+    return E_SYNTAX ;
   case EOF_T:
-	return EOF_T ;
+    return EOF_T ;
   case STRING_T:
-	if (( value = new_atom( p_token -> tokenvalue )) == NULL )
-	  return E_SPACE ;
-	LISP_TYPE( expression ) = ATOM ;
-	ATOM_VALUE( expression ) = value ;
-	break ;
+    if (( value = new_atom( p_token -> tokenvalue )) == NULL )
+      return E_SPACE ;
+    LISP_TYPE( expression ) = ATOM ;
+    ATOM_VALUE( expression ) = value ;
+    break ;
   case LEFTPAREN_T :
-	p_next_token = lookahead() ;
-	if ( p_next_token -> tokentype == EOF_T )
-	  return E_EOF ;
-	if ( p_next_token -> tokentype == RIGHTPAREN_T ) {
+    p_next_token = lookahead() ;
+    if ( p_next_token -> tokentype == EOF_T )
+      return E_EOF ;
+    if ( p_next_token -> tokentype == RIGHTPAREN_T ) {
 
-	  if (( value = new_atom( NIL_VALUE )) == NULL )
-		return E_SPACE ;
-	  LISP_TYPE( expression ) = ATOM ;
-	  ATOM_VALUE( expression ) = value ;
-	}
-	else {
+      if (( value = new_atom( NIL_VALUE )) == NULL )
+        return E_SPACE ;
+      LISP_TYPE( expression ) = ATOM ;
+      ATOM_VALUE( expression ) = value ;
+    }
+    else {
 
-	  init_circ_list( &expr_list ) ;
-	  do {
-		readerror = read_expression( &inner_expression ) ;
-		if ( readerror != 0 )
-		  return readerror ;
-		rc = circ_append( &expr_list,
-						  (generic_ptr) inner_expression ) ;
-		if ( rc == ERROR )
-		  return E_SPACE ;
-		p_next_token = lookahead() ;
-		if ( p_next_token -> tokentype == EOF_T )
-		  return E_EOF ;
+      init_circ_list( &expr_list ) ;
+      do {
+        readerror = read_expression( &inner_expression ) ;
+        if ( readerror != 0 )
+          return readerror ;
+        rc = circ_append( &expr_list,
+                          (generic_ptr) inner_expression ) ;
+        if ( rc == ERROR )
+          return E_SPACE ;
+        p_next_token = lookahead() ;
+        if ( p_next_token -> tokentype == EOF_T )
+          return E_EOF ;
 
-	  } while ( p_next_token -> tokentype != RIGHTPAREN_T ) ;
-	  LISP_TYPE( expression ) = LIST ;
-	  LIST_VALUE ( expression ) = expr_list ;
+      } while ( p_next_token -> tokentype != RIGHTPAREN_T ) ;
+      LISP_TYPE( expression ) = LIST ;
+      LIST_VALUE ( expression ) = expr_list ;
 
-	}
+    }
 
-	p_token = gettoken() ;
-	break ;
+    p_token = gettoken() ;
+    break ;
 
   case QUOTE_T:
-	p_next_token = lookahead() ;
-	if ( p_next_token -> tokentype == EOF_T )
-	  return E_EOF ;
+    p_next_token = lookahead() ;
+    if ( p_next_token -> tokentype == EOF_T )
+      return E_EOF ;
 
-	if ( p_next_token -> tokentype == RIGHTPAREN_T ) {
-	  return E_SYNTAX ;
-	} else {
+    if ( p_next_token -> tokentype == RIGHTPAREN_T ) {
+      return E_SYNTAX ;
+    } else {
 
-	  init_circ_list( &expr_list ) ;
-	  if (( inner_expression = new_expression()) == NULL )
-		return E_SPACE ;
-	  if (( value = new_atom( QUOTE_VALUE )) == NULL )
-		return E_SPACE ;
-	  LISP_TYPE( inner_expression ) = ATOM ;
-	  ATOM_VALUE( inner_expression ) = value ;
+      init_circ_list( &expr_list ) ;
+      if (( inner_expression = new_expression()) == NULL )
+        return E_SPACE ;
+      if (( value = new_atom( QUOTE_VALUE )) == NULL )
+        return E_SPACE ;
+      LISP_TYPE( inner_expression ) = ATOM ;
+      ATOM_VALUE( inner_expression ) = value ;
 
-	  rc = circ_append( &expr_list, (generic_ptr) inner_expression ) ;
-	  if ( rc == ERROR )
-		return E_SPACE ;
+      rc = circ_append( &expr_list, (generic_ptr) inner_expression ) ;
+      if ( rc == ERROR )
+        return E_SPACE ;
 
-	  readerror = read_expression( &inner_expression ) ;
-	  if ( readerror != 0 )
-		return readerror ;
+      readerror = read_expression( &inner_expression ) ;
+      if ( readerror != 0 )
+        return readerror ;
 
-	  rc = circ_append( &expr_list, (generic_ptr) inner_expression ) ;
-	  if ( rc == ERROR )
-		return E_SPACE ;
+      rc = circ_append( &expr_list, (generic_ptr) inner_expression ) ;
+      if ( rc == ERROR )
+        return E_SPACE ;
 
-	  LISP_TYPE( expression ) = LIST ;
-	  LIST_VALUE( expression ) = expr_list ;
+      LISP_TYPE( expression ) = LIST ;
+      LIST_VALUE( expression ) = expr_list ;
 
-	}
-	break ;
+    }
+    break ;
 
   }
 
@@ -173,19 +173,19 @@ int read_expression( lisp_expression *p_expression ) {
 extern int evaluate_function( char *name, clist args, lisp_expression *p_value ) {
 
   int c_car(), c_cdr(), c_cons(), c_eval(), c_exit(), c_atomp(), c_nullp(),
-	c_listp(), c_equal() ;
+    c_listp(), c_equal() ;
   static struct{ char *func_name ; int (*f)() ;
   } builtin[MAXBUILTIN] = {
-	{"CAR", c_car}, {"CDR", c_cdr}, {"CONS", c_cons}, {"EVAL", c_eval},
-	{"EXIT", c_exit}, {"ATOMP", c_atomp}, {"LISTP", c_listp}, {"NULLP", c_nullp},
-	{"EQUAL", c_equal}, {"SETQ", c_setq}
+    {"CAR", c_car}, {"CDR", c_cdr}, {"CONS", c_cons}, {"EVAL", c_eval},
+    {"EXIT", c_exit}, {"ATOMP", c_atomp}, {"LISTP", c_listp}, {"NULLP", c_nullp},
+    {"EQUAL", c_equal}, {"SETQ", c_setq}
   } ;
 
   int i ;
 
   for ( i = 0 ; i < MAXBUILTIN ; i++ ) {
 
-	if ( strcmp( name, builtin[i].func_name ) == 0 ) return builtin[i].f( args, p_value ) ;
+    if ( strcmp( name, builtin[i].func_name ) == 0 ) return builtin[i].f( args, p_value ) ;
 
   }
 
@@ -213,9 +213,9 @@ int eval_expression( lisp_expression expression, lisp_expression *p_value ) {
 
   if( equal_atom( function_name, QUOTE_VALUE )) {
 
-	if( circ_length(L) != 2 ) return E_EVAL ;
-	*p_value = (lisp_expression) DATA( circ_list_iterator( L, arg )) ;
-	return 0 ;
+    if( circ_length(L) != 2 ) return E_EVAL ;
+    *p_value = (lisp_expression) DATA( circ_list_iterator( L, arg )) ;
+    return 0 ;
 
   }
 
@@ -223,13 +223,13 @@ int eval_expression( lisp_expression expression, lisp_expression *p_value ) {
 
   if( circ_length( L ) > 1 ) {
 
-	while (( arg = circ_list_iterator( L, arg )) != NULL ) {
+    while (( arg = circ_list_iterator( L, arg )) != NULL ) {
 
-	  rc = eval_expression( (lisp_expression) DATA( arg ), &subexpr ) ;
-	  if ( rc ) return rc ;
-	  if ( circ_append ( &sublist, (generic_ptr) subexpr ) == ERROR ) return E_EVAL ;
+      rc = eval_expression( (lisp_expression) DATA( arg ), &subexpr ) ;
+      if ( rc ) return rc ;
+      if ( circ_append ( &sublist, (generic_ptr) subexpr ) == ERROR ) return E_EVAL ;
 
-	}
+    }
 
   }
 
@@ -242,27 +242,28 @@ int eval_expression( lisp_expression expression, lisp_expression *p_value ) {
 }
 
 status print_expression( lisp_expression expression ) {
-	
-	lisp_expression variable_value ;
+
+  lisp_expression variable_value ;
 
   if ( LISP_TYPE( expression ) == ATOM ) {
 
-		/* if that atom is a variable name, print the value
-			 of that variable */
-
-		if ( get_value_at_key( variables, ATOM_VALUE( expression ), &variable_value ) == OK )
+    /* if that atom is a variable name, print the value
+       of that variable */
+		if ( key_is_member( variables, ATOM_VALUE( expression ) ) == TRUE ) {
+			variable_value = get_value_at_key( variables, ATOM_VALUE( expression ) ) ;
 			print_expression( variable_value ) ;
+		}
 
-		else 
+		else
 			printf( "%s", ATOM_VALUE( expression )) ;
 
-	}
+  }
 
   else {
 
-	printf( "(" ) ;
-	circ_traverse( LIST_VALUE( expression ), print_expression ) ;
-	printf( ")" ) ;
+    printf( "(" ) ;
+    circ_traverse( LIST_VALUE( expression ), print_expression ) ;
+    printf( ")" ) ;
 
   }
 
@@ -280,11 +281,11 @@ int c_car( clist arglist, lisp_expression *p_return ) {
   lisp_expression car_list ;
 
   if ( circ_length( arglist ) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   car_list = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
   if (LISP_TYPE( car_list ) != LIST )
-	return E_EVAL ;
+    return E_EVAL ;
 
   *p_return = (lisp_expression) DATA( nth_node( LIST_VALUE( car_list ), 1)) ;
   return 0 ;
@@ -296,20 +297,20 @@ int c_atomp( clist arglist, lisp_expression *p_return ) {
   lisp_expression atom, expression ;
 
   if ( circ_length( arglist ) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   atom = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
 
   if (( expression = new_expression() ) == NULL )
-	return E_EVAL ;
+    return E_EVAL ;
 
   LISP_TYPE( expression ) = ATOM ;
 
   if ( LISP_TYPE( atom ) != ATOM )
-	ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
 
   else
-	ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
 
   *p_return = expression ;
   return 0 ;
@@ -321,38 +322,38 @@ int c_equal( clist arglist, lisp_expression *p_return ) {
   lisp_expression arg1, arg2, expression ;
 
   if ( circ_length( arglist ) != 2 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   arg1 = ( lisp_expression  ) DATA( nth_node( arglist, 1 )) ;
   arg2 = ( lisp_expression ) DATA( nth_node( arglist, 2 )) ;
 
   if (( expression = new_expression() ) == NULL )
-	return E_EVAL ;
+    return E_EVAL ;
 
   LISP_TYPE( expression ) = ATOM ;
-    
+
   /* if they aren't the same type give up immediately */
   if ( LISP_TYPE( arg1 ) != LISP_TYPE( arg2) )
-	ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
 
   /* if they are both atoms, compare the atoms */
   if ( LISP_TYPE( arg1 ) == ATOM ) {
-	if ( equal_atom( ATOM_VALUE(arg1), ATOM_VALUE(arg2) ))
-	  ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;	
-	else
-	  ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    if ( equal_atom( ATOM_VALUE(arg1), ATOM_VALUE(arg2) ))
+      ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
+    else
+      ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
   }
-  
+
   /* if they are both the same type
-	 and one is a list, they are both lists 
-	 and should be compared as such 
+     and one is a list, they are both lists
+     and should be compared as such
   */
   if ( LISP_TYPE( arg1 ) == LIST ) {
-	if ( equal_lisp_list( LIST_VALUE( arg1 ), LIST_VALUE( arg2) ) == TRUE ) {
-	  ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
-	}
-	else
-	  ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    if ( equal_lisp_list( LIST_VALUE( arg1 ), LIST_VALUE( arg2) ) == TRUE ) {
+      ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
+    }
+    else
+      ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
   }
 
   *p_return = expression ;
@@ -366,19 +367,19 @@ int c_nullp( clist arglist, lisp_expression *p_return ) {
   lisp_expression nullp, expression ;
 
   if ( circ_length( arglist ) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   nullp = ( lisp_expression ) DATA( nth_node( arglist, 1 ) ) ;
   if (( expression = new_expression() ) == NULL )
-	return E_EVAL ;
+    return E_EVAL ;
 
   LISP_TYPE( expression ) = ATOM ;
 
   if ( LISP_TYPE( nullp) == ATOM && strcmp( ATOM_VALUE( nullp ), NIL_VALUE ) == 0 )
-	ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
 
   else
-	ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
 
   *p_return = expression ;
   return 0 ;
@@ -390,20 +391,20 @@ int c_listp( clist arglist, lisp_expression *p_return ) {
   lisp_expression list, expression ;
 
   if ( circ_length( arglist ) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   list = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
 
   if (( expression = new_expression() ) == NULL )
-	return E_EVAL ;
+    return E_EVAL ;
 
   LISP_TYPE( expression ) = ATOM ;
 
   if( LISP_TYPE( list ) != LIST )
-	ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
 
   else
-	ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
+    ATOM_VALUE( expression ) = new_atom( T_VALUE ) ;
 
   *p_return = expression ;
   return 0 ;
@@ -411,30 +412,33 @@ int c_listp( clist arglist, lisp_expression *p_return ) {
 }
 
 int c_setq( clist arglist, lisp_expression *p_return ) {
-	
-	lisp_expression var_name ;
-	lisp_expression var_value ;
 
-	lisp_var temp ;
+  lisp_expression var_name ;
+  lisp_expression var_value ;
 
-	/* can only assign one expression to variable */
-	if ( circ_length( arglist ) != 2 )
-		return E_EVAL ;
+  lisp_var temp ;
 
-	var_name = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
-	if ( LISP_TYPE( var_name ) != ATOM )
-		return E_EVAL ;
+  if ( circ_length( arglist ) != 2 )
+    return E_EVAL ;
 
-	var_value = ( lisp_expression ) DATA( nth_node( arglist, 2 )) ;
+  var_name = ( lisp_expression ) DATA( nth_node( arglist, 1 )) ;
+  if ( LISP_TYPE( var_name ) != ATOM )
+    return E_EVAL ;
 
-	temp.key = ATOM_VALUE( var_name ) ;
-	temp.value = var_value ;
+  var_value = ( lisp_expression ) DATA( nth_node( arglist, 2 )) ;
 
-	append_lisp_var( &variables, &temp ) ;
+  temp.key = ATOM_VALUE( var_name ) ;
+  temp.value = var_value ;
 
-	/* setq returns the data assigned*/
-	*p_return = var_value ;
-	return 0 ;
+	/* check if variable the variable name has already been used */
+	if ( key_is_member( variables, temp.key ) == TRUE )
+		set_value_at_key( &variables, temp.key, var_value ) ;
+	else 
+		append_lisp_var( &variables, &temp ) ;
+
+  /* setq returns the data assigned*/
+  *p_return = var_value ;
+  return 0 ;
 
 }
 
@@ -445,32 +449,32 @@ int c_cdr( clist arglist, lisp_expression *p_return ) {
   clist car_node ;
 
   if ( circ_length(arglist) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   cdr_list = (lisp_expression) DATA( nth_node( arglist, 1 )) ;
   if ( LISP_TYPE( cdr_list ) != LIST )
-	return E_EVAL ;
+    return E_EVAL ;
 
   if (( expression = new_expression() ) == NULL )
-	return E_EVAL ;
+    return E_EVAL ;
 
   car_node = nth_node( LIST_VALUE( cdr_list ), 1 ) ;
   free( DATA( car_node )) ;
 
   if ( circ_delete_node( &LIST_VALUE( cdr_list ), car_node ) == ERROR )
-	return E_EVAL ;
+    return E_EVAL ;
 
   if ( empty_circ_list( LIST_VALUE( cdr_list )) == TRUE ) {
 
-	LISP_TYPE( expression ) = ATOM ;
-	ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
-	if ( ATOM_VALUE( expression ) == NULL )
-	  return E_SPACE ;
+    LISP_TYPE( expression ) = ATOM ;
+    ATOM_VALUE( expression ) = new_atom( NIL_VALUE ) ;
+    if ( ATOM_VALUE( expression ) == NULL )
+      return E_SPACE ;
 
   }
   else {
-	LISP_TYPE( expression ) = LIST ;
-	LIST_VALUE( expression ) = LIST_VALUE( cdr_list ) ;
+    LISP_TYPE( expression ) = LIST ;
+    LIST_VALUE( expression ) = LIST_VALUE( cdr_list ) ;
   }
 
   *p_return = expression ;
@@ -483,16 +487,16 @@ int c_cons( clist arglist, lisp_expression *p_return ) {
   lisp_expression arg1, arg2 ;
 
   if ( circ_length( arglist ) != 2 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   arg1 = (lisp_expression) DATA( nth_node( arglist, 1 )) ;
   arg2 = (lisp_expression) DATA( nth_node( arglist, 2 )) ;
 
   if ( LISP_TYPE( arg2 ) != LIST )
-	return E_EVAL ;
+    return E_EVAL ;
 
   if( circ_insert( &LIST_VALUE( arg2 ), (generic_ptr) arg1) == ERROR )
-	return E_EVAL ;
+    return E_EVAL ;
 
   *p_return = arg2 ;
   return 0 ;
@@ -502,7 +506,7 @@ int c_cons( clist arglist, lisp_expression *p_return ) {
 int c_eval( clist arglist, lisp_expression *p_return ) {
 
   if( circ_length( arglist ) != 1 )
-	return E_EVAL ;
+    return E_EVAL ;
 
   return eval_expression(( lisp_expression ) DATA( arglist ), p_return ) ;
 

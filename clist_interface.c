@@ -13,40 +13,60 @@ bool key_is_member( clist L, char *key ) {
 
 	lisp_var *temp_var ;
 
-	if ( empty_circ_list( L ) == TRUE )
-		return ERROR ;
+	if ( empty_circ_list( L ) )
+		return FALSE ;
 
 	while ( ( temp = circ_list_iterator( L, temp )) != NULL ) {
 		
 		temp_var = (lisp_var *)DATA( temp ) ;
 
-		if ( strcmp( temp_var -> key, key ) == 0 )
+		if ( strcmp( temp_var -> key, key ) == 0 ) {
 			rc = TRUE ;
+			return rc ;
+		}
+
 	}
 		
 	return rc ;
 	
 }
 
-status get_value_at_key( clist L, char *key, lisp_expression *value ) {
+lisp_expression get_value_at_key( clist L, char *key ) {
 	
 	clist temp = NULL ;
 	lisp_var *temp_var ;
 	lisp_expression temp_value ;
 
-	if ( key_is_member( L, key ) == FALSE )
-		return ERROR ;
-
 	while ( ( temp = circ_list_iterator( L, temp )) != NULL ) {
+
 		temp_var = (lisp_var *)DATA( temp ) ;
-		
+
 		if ( strcmp( temp_var -> key, key ) == 0 ) {
 			temp_value = temp_var -> value ;
-			*value = temp_value ;
+			return temp_value ;
+		}
+
+	}
+
+	return temp_value ;
+
+}
+
+status set_value_at_key( clist *p_L, char *key, lisp_expression new_value ) {
+	
+	clist temp = NULL ;
+	lisp_var *temp_var ;
+
+	while ( ( temp = circ_list_iterator( *p_L, temp )) != NULL ) {
+
+		temp_var = (lisp_var *)DATA( temp ) ;
+
+		if ( strcmp( temp_var -> key, key ) == 0 ) {
+			temp_var -> value = new_value ;
 			return OK ;
 		}
 		else
-			return ERROR ;
+			return ERROR ; /* this theoretically shouldn't happen */
 
 	}
 
@@ -58,7 +78,8 @@ status append_lisp_var( clist *p_L, lisp_var *var ) {
 	
 	lisp_var *temp = malloc( sizeof( lisp_var ) ) ;
 	
-	if ( !temp ) return ERROR ;
+	if ( temp == NULL ) 
+		return ERROR ;
 
 	*temp = *var ;
 
