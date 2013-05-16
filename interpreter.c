@@ -249,6 +249,12 @@ status print_expression( lisp_expression expression ) {
 
     /* if that atom is a variable name, print the value
        of that variable */
+		
+		/* need to make this so that it won't bother if there
+			 is a quote in front of it. that will
+			 probably require changing eval_expression */
+
+
 		if ( key_is_member( variables, ATOM_VALUE( expression ) ) == TRUE ) {
 			variable_value = get_value_at_key( variables, ATOM_VALUE( expression ) ) ;
 			print_expression( variable_value ) ;

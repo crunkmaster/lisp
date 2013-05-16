@@ -35,7 +35,7 @@ lisp_expression get_value_at_key( clist L, char *key ) {
 	
 	clist temp = NULL ;
 	lisp_var *temp_var ;
-	lisp_expression temp_value ;
+	lisp_expression temp_value = NULL ;
 
 	while ( ( temp = circ_list_iterator( L, temp )) != NULL ) {
 
